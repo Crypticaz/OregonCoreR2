@@ -914,23 +914,6 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
                     m_caster->CastSpell(unitTarget, spell_id, true, NULL);
                     return;
                 }
-            case 14185:                                 // Preparation Rogue
-                {
-                    if (m_caster->GetTypeId() != TYPEID_PLAYER)
-                        return;
-
-                    //immediately finishes the cooldown on certain Rogue abilities
-                    const PlayerSpellMap& sp_list = m_caster->ToPlayer()->GetSpellMap();
-                    for (PlayerSpellMap::const_iterator itr = sp_list.begin(); itr != sp_list.end(); ++itr)
-                    {
-                        uint32 classspell = itr->first;
-                        SpellEntry const* spellInfo = sSpellStore.LookupEntry(classspell);
-
-                        if (spellInfo->SpellFamilyName == SPELLFAMILY_ROGUE && (spellInfo->SpellFamilyFlags & 0x26000000860LL))
-                            m_caster->ToPlayer()->RemoveSpellCooldown(classspell, true);
-                    }
-                    return;
-                }
             case 15998:                                 // Capture Worg Pup
             case 29435:                                 // Capture Female Kaliri Hatchling
                 {

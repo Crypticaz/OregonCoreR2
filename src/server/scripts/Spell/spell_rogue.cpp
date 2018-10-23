@@ -39,7 +39,7 @@ class spell_rog_cheat_death_SpellScript : public SpellScript
 
     void HandleDummy(SpellEffIndex effIndex)
     {
-        Unit *caster = GetCaster();
+        Unit* caster = GetCaster();
         caster->CastSpell(caster, ROGUE_SPELL_CHEATING_DEATH, true);
     }
 
@@ -55,6 +55,47 @@ SpellScript *GetSpellScript_spell_rog_cheat_death()
     return new spell_rog_cheat_death_SpellScript();
 }
 
+class spell_rog_preparation_SpellScript : public SpellScript
+{
+    bool Validate(SpellEntry const * spellEntry)
+    {
+        return true;
+    }
+
+    void HandleDummy(SpellEffIndex effIndex)
+    {
+        Unit* caster = GetCaster();
+        if (caster->GetTypeId() != TYPEID_PLAYER)
+            return;
+
+        //immediately finishes the cooldown on certain Rogue abilities
+        const PlayerSpellMap& sp_list = caster->ToPlayer()->GetSpellMap();
+        for (PlayerSpellMap::const_iterator itr = sp_list.begin(); itr != sp_list.end();)
+        {
+            SpellEntry const *spellInfo = sSpellStore.LookupEntry(itr->first);
+    
+            if (spellInfo->SpellFamilyName == SPELLFAMILY_ROGUE)
+            {
+                if (spellInfo->SpellFamilyFlags & 0x26000000860LL)
+                    caster->ToPlayer()->RemoveSpellCooldown((itr++)->first, true);
+            }
+            else
+                ++itr;
+        }
+    }
+
+    void Register()
+    {
+        // add dummy effect spell handler to Preparation
+        EffectHandlers += EffectHandlerFn(spell_rog_preparation_SpellScript::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
+    }
+};
+
+SpellScript *GetSpellScript_spell_rog_preparation()
+{
+    return new spell_rog_preparation_SpellScript();
+}
+
 void AddSC_rogue_spell_scripts()
 {
     Script *newscript;
@@ -62,5 +103,10 @@ void AddSC_rogue_spell_scripts()
     newscript = new Script;
     newscript->Name = "spell_rog_cheat_death";
     newscript->GetSpellScript = &GetSpellScript_spell_rog_cheat_death;
+    newscript->RegisterSelf();
+	
+    newscript = new Script;
+    newscript->Name = "spell_rog_preparation";
+    newscript->GetSpellScript = &GetSpellScript_spell_rog_preparation;
     newscript->RegisterSelf();
 }
