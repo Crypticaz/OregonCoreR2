@@ -23,14 +23,54 @@
 
 #include "ScriptPCH.h"
 
+enum HunterSpells
+{
+    HUNTER_SPELL_READINESS                       = 23989,
+    HUNTER_SPELL_BESTIAL_WRATH                   = 19574
+};
+
+class spell_hun_readiness_SpellScript : public SpellScript
+{
+    void HandleDummy(SpellEffIndex effIndex)
+    {
+        Unit* caster = GetCaster();
+        if (caster->GetTypeId() != TYPEID_PLAYER)
+            return;
+
+        // immediately finishes the cooldown on your other Hunter abilities except Bestial Wrath
+        const PlayerSpellMap& cm = caster->ToPlayer()->GetSpellMap();
+        for (PlayerSpellMap::const_iterator itr = cm.begin(); itr != cm.end();)
+        {
+            SpellEntry const *spellInfo = sSpellStore.LookupEntry(itr->first);
+
+            if (spellInfo->SpellFamilyName == SPELLFAMILY_HUNTER &&
+                spellInfo->Id != HUNTER_SPELL_READINESS &&
+                spellInfo->Id != HUNTER_SPELL_BESTIAL_WRATH &&
+                GetSpellRecoveryTime(spellInfo) > 0)
+                caster->ToPlayer()->RemoveSpellCooldown((itr++)->first,true);
+            else
+                ++itr;
+        }
+    }
+
+    void Register()
+    {
+        // add dummy effect spell handler to Readiness
+        EffectHandlers += EffectHandlerFn(spell_hun_readiness_SpellScript::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
+    }
+};
+
+SpellScript * GetSpellScript_spell_hun_readiness()
+{
+    return new spell_hun_readiness_SpellScript();
+}
+
 void AddSC_hunter_spell_scripts()
 {
-    //Script *newscript;
+    Script *newscript;
 
-    /*
     newscript = new Script;
-    newscript->Name = "spell_hun_";
-    newscript->GetSpellScript = &GetSpellScript_spell_hun_;
+    newscript->Name = "spell_hun_readiness";
+    newscript->GetSpellScript = &GetSpellScript_spell_hun_readiness;
     newscript->RegisterSelf();
-    */
 }

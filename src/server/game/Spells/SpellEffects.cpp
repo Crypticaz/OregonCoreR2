@@ -1885,23 +1885,6 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
 
         switch (m_spellInfo->Id)
         {
-        case 23989:                                 //Readiness talent
-            {
-                if (m_caster->GetTypeId() != TYPEID_PLAYER)
-                    return;
-
-                //immediately finishes the cooldown for hunter abilities
-                const PlayerSpellMap& sp_list = m_caster->ToPlayer()->GetSpellMap();
-                for (PlayerSpellMap::const_iterator itr = sp_list.begin(); itr != sp_list.end(); ++itr)
-                {
-                    uint32 classspell = itr->first;
-                    SpellEntry const* spellInfo = sSpellStore.LookupEntry(classspell);
-
-                    if (spellInfo->SpellFamilyName == SPELLFAMILY_HUNTER && spellInfo->Id != 23989 && GetSpellRecoveryTime(spellInfo) > 0)
-                        m_caster->ToPlayer()->RemoveSpellCooldown(classspell, true);
-                }
-                return;
-            }
         case 37506:                                 // Scatter Shot
             {
                 if (m_caster->GetTypeId() != TYPEID_PLAYER)
