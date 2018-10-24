@@ -2553,6 +2553,19 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
             m_target->RemovePetAura(petSpell);
         return;
     }
+
+    if (m_target->GetTypeId() == TYPEID_PLAYER)
+    {
+        SpellAreaForAreaMapBounds saBounds = sSpellMgr.GetSpellAreaForAuraMapBounds(GetId());
+        if (saBounds.first != saBounds.second)
+        {
+			uint32 zone = m_target->GetZoneId();
+			uint32 area = m_target->GetAreaId();
+
+            for (SpellAreaForAreaMap::const_iterator itr = saBounds.first; itr != saBounds.second; ++itr)
+                itr->second->ApplyOrRemoveSpellIfCan((Player*)m_target, zone, area, false);
+        }
+    }
 }
 
 void Aura::HandleAuraMounted(bool apply, bool Real)

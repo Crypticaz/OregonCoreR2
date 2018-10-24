@@ -3972,7 +3972,7 @@ SpellCastResult Spell::CheckCast(bool strict)
     // zone check
     if (m_caster->GetTypeId() == TYPEID_PLAYER)
     {
-        SpellCastResult locRes = IsSpellAllowedInLocation(m_spellInfo, m_caster->GetMapId(), m_caster->GetZoneId(), m_caster->GetAreaId());
+        SpellCastResult locRes = sSpellMgr.GetSpellAllowedInLocationError(m_spellInfo, m_caster->GetMapId(), m_caster->GetZoneId(), m_caster->GetAreaId());
         if (locRes != SPELL_CAST_OK)
             return locRes;
     }

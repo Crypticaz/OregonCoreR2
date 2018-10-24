@@ -548,6 +548,7 @@ bool ChatHandler::HandleReloadAllSpellCommand(const char*)
     HandleReloadSkillExtraItemTemplateCommand("a");
     HandleReloadSpellAffectCommand("a");
     HandleReloadSpellRequiredCommand("a");
+    HandleReloadSpellAreaCommand("a");
     HandleReloadSpellLearnSpellCommand("a");
     HandleReloadSpellGroupsCommand("a");
     HandleReloadSpellGroupStackRulesCommand("a");
@@ -883,6 +884,14 @@ bool ChatHandler::HandleReloadSpellRequiredCommand(const char*)
     sLog.outString("Re-Loading Spell Required Data... ");
     sSpellMgr.LoadSpellRequired();
     SendGlobalGMSysMessage("DB table spell_required reloaded.");
+    return true;
+}
+
+bool ChatHandler::HandleReloadSpellAreaCommand(const char*)
+{
+    sLog.outString( "Re-Loading SpellArea Data..." );
+    sSpellMgr.LoadSpellAreas();
+    SendGlobalSysMessage("DB table `spell_area` (spell dependences from area/quest/auras state) reloaded.");
     return true;
 }
 

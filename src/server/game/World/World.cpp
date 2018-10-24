@@ -1363,6 +1363,9 @@ void World::SetInitialWorldSettings()
     sConsole.SetLoadingLabel("Loading Quests...");
     sObjectMgr.LoadQuests();                                    // must be loaded after DBCs, creature_template, item_template, gameobject tables
 
+    sConsole.SetLoadingLabel( "Loading SpellArea Data..." );          // must be after quest load
+    sSpellMgr.LoadSpellAreas();
+
     sConsole.SetLoadingLabel("Checking Quest Disables");
     sDisableMgr.CheckQuestDisables();                       // must be after loading quests
 

@@ -13012,6 +13012,23 @@ void Player::AddQuest(Quest const* pQuest, Object* questGiver)
     if (questGiver && pQuest->GetQuestStartScript() != 0)
         GetMap()->ScriptsStart(sQuestStartScripts, pQuest->GetQuestStartScript(), questGiver, this);
 
+    // Some spells applied at quest activation
+	uint32 zone = GetZoneId();
+	uint32 area = GetAreaId();
+
+    SpellAreaForAreaMapBounds saBounds = sSpellMgr.GetSpellAreaForAreaMapBounds(zone);
+    for (SpellAreaForAreaMap::const_iterator itr = saBounds.first; itr != saBounds.second; ++itr)
+        itr->second->ApplyOrRemoveSpellIfCan(this, zone, area, true);
+    if (area != zone)
+    {
+        saBounds = sSpellMgr.GetSpellAreaForAreaMapBounds(area);
+        for (SpellAreaForAreaMap::const_iterator itr = saBounds.first; itr != saBounds.second; ++itr)
+            itr->second->ApplyOrRemoveSpellIfCan(this, zone, area, true);
+    }
+    saBounds = sSpellMgr.GetSpellAreaForAreaMapBounds(0);
+    for (SpellAreaForAreaMap::const_iterator itr = saBounds.first; itr != saBounds.second; ++itr)
+        itr->second->ApplyOrRemoveSpellIfCan(this, zone, area, true);
+
     UpdateForQuestsGO();
 }
 
@@ -13172,6 +13189,24 @@ void Player::RewardQuest(Quest const* pQuest, uint32 reward, Object* questGiver,
         else
             CastSpell(this, pQuest->GetRewSpell(), true);
     }
+
+    // remove auras from spells with quest reward state limitations
+    // Some spells applied at quest reward
+	uint32 zone = GetZoneId();
+	uint32 area = GetAreaId();
+
+    SpellAreaForAreaMapBounds saBounds = sSpellMgr.GetSpellAreaForAreaMapBounds(zone);
+    for (SpellAreaForAreaMap::const_iterator itr = saBounds.first; itr != saBounds.second; ++itr)
+        itr->second->ApplyOrRemoveSpellIfCan(this, zone, area, false);
+    if (area != zone)
+    {
+        saBounds = sSpellMgr.GetSpellAreaForAreaMapBounds(area);
+        for (SpellAreaForAreaMap::const_iterator itr = saBounds.first; itr != saBounds.second; ++itr)
+            itr->second->ApplyOrRemoveSpellIfCan(this, zone, area, false);
+    }
+    saBounds = sSpellMgr.GetSpellAreaForAreaMapBounds(0);
+    for (SpellAreaForAreaMap::const_iterator itr = saBounds.first; itr != saBounds.second; ++itr)
+        itr->second->ApplyOrRemoveSpellIfCan(this, zone, area, false);
 
     SetCanDelayTeleport(false);
 }
@@ -20020,22 +20055,10 @@ void Player::UpdateZoneDependentAuras(uint32 newZone)
         RemoveSpellsCausingAura(SPELL_AURA_FLY);
     }
 
-    // Some spells applied at enter into zone (with subzones)
-    // Human Illusion
-    // NOTE: these are removed by RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_CHANGE_MAP);
-    if (newZone == 2367)                                  // Old Hillsbrad Foothills
-    {
-        uint32 spellid = 0;
-        // all horde races
-        if (GetTeam() == HORDE)
-            spellid = getGender() == GENDER_FEMALE ? 35481 : 35480;
-        // and some alliance races
-        else if (getRace() == RACE_NIGHTELF || getRace() == RACE_DRAENEI)
-            spellid = getGender() == GENDER_FEMALE ? 35483 : 35482;
-
-        if (spellid && !HasAura(spellid, 0))
-            CastSpell(this, spellid, true);
-    }
+    // Some spells applied at enter into zone (with subzones), aura removed in UpdateAreaDependentAuras that called always at zone->area update
+    SpellAreaForAreaMapBounds saBounds = sSpellMgr.GetSpellAreaForAreaMapBounds(m_zoneUpdateId);
+    for (SpellAreaForAreaMap::const_iterator itr = saBounds.first; itr != saBounds.second; ++itr)
+        itr->second->ApplyOrRemoveSpellIfCan(this, m_zoneUpdateId, 0, true);
 }
 
 void Player::UpdateAreaDependentAuras(uint32 newArea)
@@ -20044,7 +20067,7 @@ void Player::UpdateAreaDependentAuras(uint32 newArea)
     for (AuraMap::iterator iter = m_Auras.begin(); iter != m_Auras.end();)
     {
         // use m_zoneUpdateId for speed: UpdateArea called from UpdateZone or instead UpdateZone in both cases m_zoneUpdateId up-to-date
-        if (IsSpellAllowedInLocation(iter->second->GetSpellProto(), GetMapId(), m_zoneUpdateId, newArea) != SPELL_CAST_OK)
+        if (sSpellMgr.GetSpellAllowedInLocationError(iter->second->GetSpellProto(), GetMapId(), m_zoneUpdateId, m_areaUpdateId, this) != SPELL_CAST_OK)
         {
             // Special handling for Shattrath Flasks
             if (sSpellMgr.IsSpellMemberOfSpellGroup(iter->second->GetSpellProto()->Id, SPELL_GROUP_ELIXIR_SHATTRATH))    // for shattrath flasks we want only to remove it's triggered effect, not flask itself.
@@ -20069,20 +20092,10 @@ void Player::UpdateAreaDependentAuras(uint32 newArea)
         }
     }
 
-    // unmount if enter in this subzone
-    if (newArea == 35)
-        RemoveSpellsCausingAura(SPELL_AURA_MOUNTED);
-    // Dragonmaw Illusion
-    else if (newArea == 3759 || newArea == 3966 || newArea == 3939)
-    {
-        if (GetDummyAura(40214))
-        {
-            if (!HasAura(40216, 0))
-                CastSpell(this, 40216, true);
-            if (!HasAura(42016, 0))
-                CastSpell(this, 42016, true);
-        }
-    }
+    // some auras applied at subzone enter
+    SpellAreaForAreaMapBounds saBounds = sSpellMgr.GetSpellAreaForAreaMapBounds(m_areaUpdateId);
+    for (SpellAreaForAreaMap::const_iterator itr = saBounds.first; itr != saBounds.second; ++itr)
+        itr->second->ApplyOrRemoveSpellIfCan(this, m_zoneUpdateId, m_areaUpdateId, true);
 }
 
 uint32 Player::GetCorpseReclaimDelay(bool pvp) const
