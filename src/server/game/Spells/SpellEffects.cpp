@@ -1901,48 +1901,6 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
     case SPELLFAMILY_PALADIN:
         switch (m_spellInfo->SpellIconID)
         {
-        case 156:                                   // Holy Shock
-            {
-                if (!unitTarget)
-                    return;
-
-                int hurt = 0;
-                int heal = 0;
-
-                switch (m_spellInfo->Id)
-                {
-                case 20473:
-                    hurt = 25912;
-                    heal = 25914;
-                    break;
-                case 20929:
-                    hurt = 25911;
-                    heal = 25913;
-                    break;
-                case 20930:
-                    hurt = 25902;
-                    heal = 25903;
-                    break;
-                case 27174:
-                    hurt = 27176;
-                    heal = 27175;
-                    break;
-                case 33072:
-                    hurt = 33073;
-                    heal = 33074;
-                    break;
-                default:
-                    sLog.outError("Spell::EffectDummy: Spell %u not handled in HS", m_spellInfo->Id);
-                    return;
-                }
-
-                if (m_caster->IsFriendlyTo(unitTarget))
-                    m_caster->CastSpell(unitTarget, heal, true, 0);
-                else
-                    m_caster->CastSpell(unitTarget, hurt, true, 0);
-
-                return;
-            }
         case 561:                                   // Judgement of command
             {
                 if (!unitTarget)
