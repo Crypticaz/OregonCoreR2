@@ -1636,14 +1636,6 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
             m_caster->SetPower(POWER_RAGE, 0);
             break;
         }
-        if (m_spellInfo->Id == 21977)                      //Warrior's Wrath
-        {
-            if (!unitTarget)
-                return;
-
-            m_caster->CastSpell(unitTarget, 21887, true); // spell mod
-            return;
-        }
         if (m_spellInfo->Id == 30284)  //Chess: Change Facing
         {
             m_caster->SetInFront(unitTarget);
