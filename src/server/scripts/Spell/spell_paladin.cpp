@@ -39,7 +39,12 @@ enum PaladinSpells
     PALADIN_SPELL_HOLY_SHOCK_R4_HEALING          = 27175,
     PALADIN_SPELL_HOLY_SHOCK_R5                  = 33072,
     PALADIN_SPELL_HOLY_SHOCK_R5_DAMAGE           = 33073,
-    PALADIN_SPELL_HOLY_SHOCK_R5_HEALING          = 33074
+    PALADIN_SPELL_HOLY_SHOCK_R5_HEALING          = 33074,
+
+    SPELL_BLESSING_OF_LOWER_CITY_DRUID           = 37878,
+    SPELL_BLESSING_OF_LOWER_CITY_PALADIN         = 37879,
+    SPELL_BLESSING_OF_LOWER_CITY_PRIEST          = 37880,
+    SPELL_BLESSING_OF_LOWER_CITY_SHAMAN          = 37881
 };
 
 class spell_pal_holy_shock_SpellScript : public SpellScript
@@ -139,6 +144,51 @@ SpellScript * GetSpellScript_spell_pal_holy_shock()
     return new spell_pal_holy_shock_SpellScript();
 }
 
+class spell_pal_blessing_of_faith_SpellScript : public SpellScript
+{
+    bool Validate(SpellEntry const * spellEntry)
+    {
+        if (!sSpellStore.LookupEntry(SPELL_BLESSING_OF_LOWER_CITY_DRUID))
+            return false;
+        if (!sSpellStore.LookupEntry(SPELL_BLESSING_OF_LOWER_CITY_PALADIN))
+            return false;
+        if (!sSpellStore.LookupEntry(SPELL_BLESSING_OF_LOWER_CITY_PRIEST))
+            return false;
+        if (!sSpellStore.LookupEntry(SPELL_BLESSING_OF_LOWER_CITY_SHAMAN))
+            return false;
+        return true;
+    }
+
+    void HandleDummy(SpellEffIndex effIndex)
+    {
+        if (Unit *unitTarget = GetHitUnit())
+        {
+            uint32 spell_id = 0;
+            switch(unitTarget->getClass())
+            {
+                case CLASS_DRUID:   spell_id = SPELL_BLESSING_OF_LOWER_CITY_DRUID; break;
+                case CLASS_PALADIN: spell_id = SPELL_BLESSING_OF_LOWER_CITY_PALADIN; break;
+                case CLASS_PRIEST:  spell_id = SPELL_BLESSING_OF_LOWER_CITY_PRIEST; break;
+                case CLASS_SHAMAN:  spell_id = SPELL_BLESSING_OF_LOWER_CITY_SHAMAN; break;
+                default: return;                    // ignore for non-healing classes
+            }
+
+            GetCaster()->CastSpell(GetCaster(), spell_id, true);
+        }
+    }
+
+    void Register()
+    {
+        // add dummy effect spell handler to Blessing of Faith
+        EffectHandlers += EffectHandlerFn(spell_pal_blessing_of_faith_SpellScript::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
+    }
+};
+
+SpellScript * GetSpellScript_spell_pal_blessing_of_faith()
+{
+    return new spell_pal_blessing_of_faith_SpellScript();
+}
+
 void AddSC_paladin_spell_scripts()
 {
     Script *newscript;
@@ -146,6 +196,11 @@ void AddSC_paladin_spell_scripts()
     newscript = new Script;
     newscript->Name = "spell_pal_holy_shock";
     newscript->GetSpellScript = &GetSpellScript_spell_pal_holy_shock;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "spell_pal_blessing_of_faith";
+    newscript->GetSpellScript = &GetSpellScript_spell_pal_blessing_of_faith;
     newscript->RegisterSelf();
 }
 

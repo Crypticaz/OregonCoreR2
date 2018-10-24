@@ -1989,33 +1989,6 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
                 // now let next effect cast spell at each target.
                 return;
             }
-        case 37877:                                 // Blessing of Faith
-            {
-                if (!unitTarget)
-                    return;
-
-                uint32 spell_id = 0;
-                switch (unitTarget->getClass())
-                {
-                case CLASS_DRUID:
-                    spell_id = 37878;
-                    break;
-                case CLASS_PALADIN:
-                    spell_id = 37879;
-                    break;
-                case CLASS_PRIEST:
-                    spell_id = 37880;
-                    break;
-                case CLASS_SHAMAN:
-                    spell_id = 37881;
-                    break;
-                default:
-                    return;                    // ignore for not healing classes
-                }
-
-                m_caster->CastSpell(m_caster, spell_id, true);
-                return;
-            }
         }
         break;
     case SPELLFAMILY_SHAMAN:
