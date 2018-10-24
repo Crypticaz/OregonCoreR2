@@ -8544,6 +8544,16 @@ bool Unit::isSpellCrit(Unit* victim, SpellEntry const* spellProto, SpellSchoolMa
                         }
                     }
                 }
+				
+                // Custom crit by class
+                switch (spellProto->SpellFamilyName)
+                {
+                    case SPELLFAMILY_ROGUE:
+                    // Shiv-applied poisons can't crit
+                    if (FindCurrentSpellBySpellId(5938))
+                        crit_chance = 0.0f;
+                    break;
+                }
                 break;
             }
         case SPELL_DAMAGE_CLASS_MELEE:
