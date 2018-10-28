@@ -45,6 +45,7 @@
 #include "GameEventMgr.h"
 #include "DisableMgr.h"
 #include "ConditionMgr.h"
+#include "LuaEngine.h"
 #include "SpellScript.h"
 #include "ScriptMgr.h"
 
@@ -2450,6 +2451,10 @@ void Spell::cast(bool skipCheck)
             return;
         }
     }
+	
+    // used by eluna
+    if (m_caster->GetTypeId() == TYPEID_PLAYER)
+        sEluna->OnSpellCast(m_caster->ToPlayer(), this, skipCheck);
 
     // triggered cast called from Spell::prepare where it was already checked
     if (!skipCheck)

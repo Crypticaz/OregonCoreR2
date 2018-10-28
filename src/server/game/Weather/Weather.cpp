@@ -22,6 +22,7 @@
 #include "World.h"
 #include "ObjectMgr.h"
 #include "Log.h"
+#include "LuaEngine.h"
 #include "Utilities/Util.h"
 
 // Create the Weather object
@@ -258,6 +259,7 @@ bool Weather::UpdateWeather()
     }
     sLog.outDetail("Change the weather of zone %u to %s.", m_zone, wthstr);
 
+    sEluna->OnChange(this, m_zone, state, m_grade);
     return true;
 }
 
